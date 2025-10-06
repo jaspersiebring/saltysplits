@@ -41,17 +41,12 @@ def represent_time(td_series: pd.Series, include_ns: bool = False) -> pd.DataFra
     return time_dataframe
 
 @st.cache_data
-def demo_splits(lss_path: Path = DEMO_SPLITS) -> SaltySplits:
-    splits = ss.read_lss(lss_path=lss_path)
-    return splits
-
-@st.cache_data
 def splits_from_bytes(lss_bytes: bytes) -> SaltySplits:
     return SaltySplits.from_xml(lss_bytes)
 
 @st.cache_data
 def splits_dataframe(splits_bytes: bytes, time_type: TimeType, allow_partial: bool, allow_empty: bool = False, cumulative: bool = False, lss_repr: bool = False, lss_ns: bool = True) -> pd.DataFrame:
-    # mainly exists because we can't cache SaltySplits instances (add kwargs though)
+    # mainly exists because we can't cache SaltySplits instances
     splits = splits_from_bytes(splits_bytes)
     dataframe = splits.to_df(
         time_type=time_type,
@@ -202,125 +197,125 @@ if __name__ == "__main__":
             accept_multiple_files=False,
             label_visibility="hidden"
         )
+        
         if lss_file is not None:
             lss_bytes = lss_file.getvalue()
-            st.toast("Did you know that you can export your Run Stats? Hover the table and click 'Download as CSV'")
+            if splits_dataframe(lss_bytes, time_type=TimeType.REAL_TIME, allow_partial=False).empty:
+                st.error(f"No runs with {TimeType.REAL_TIME.name} values found, defaulting to example LSS file")
+                lss_bytes = read_bytes(DEMO_SPLITS)    
+            else:
+                st.toast("Did you know that you can export your Run Stats? Hover the table and click 'Download as CSV'")
         else:
             lss_bytes = read_bytes(DEMO_SPLITS)
-
         splits = splits_from_bytes(lss_bytes)
-        if "time_type" not in st.session_state:
-            st.session_state["time_type"] = TimeType.REAL_TIME
 
     # LIFETIME STATS
     st.title(f"{splits.game_name} / :primary[{splits.category_name}]")
     splits_metrics(splits_bytes=lss_bytes, time_type=TimeType.REAL_TIME)
 
     for i, tab in enumerate(st.tabs(["Real Time", "Game Time"])):
-        time_type = TimeType(i)
-        st.session_state["time_type"] = time_type
-        
+        st.session_state.time_type = TimeType(i)
+        complete_runs = splits_dataframe(lss_bytes, time_type=st.session_state.time_type, allow_partial=False)
+        partial_runs = splits_dataframe(lss_bytes, time_type=st.session_state.time_type, allow_partial=True)
+        cumulative_runs = splits_dataframe(lss_bytes, time_type=st.session_state.time_type, allow_partial=True, cumulative=True)
+
         with tab:
             with st.container(border=True):
-                lifetime_line, resets_pie = st.columns(2, gap="large")
-                
-                with lifetime_line:
-                    # CONSIDER BUNDLING DATA LOADING IN TIME_LINEGRAPH
-                    complete_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=False)
-                    run_times = complete_runs.sum(axis=0)
-                    run_times_df = represent_time(run_times, include_ns=False)
-                    time_linegraph(run_times_df, title="Completed Run Duration over Time", x_title="Attempt Number", y_title = "Run Duration")
-
-                with resets_pie:
-                    partial_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True)
-                    resets_df = represent_resets(partial_runs)
-                    resets_piechart(resets_df)
+                if not complete_runs.empty:
+                    lifetime_line, resets_pie = st.columns(2, gap="large")
+                    with lifetime_line:
+                        run_times = complete_runs.sum(axis=0)
+                        run_times_df = represent_time(run_times, include_ns=False)
+                        time_linegraph(run_times_df, title="Completed Run Duration over Time", x_title="Attempt Number", y_title = "Run Duration")
                     
+                    with resets_pie:
+                        resets_df = represent_resets(partial_runs)
+                        resets_piechart(resets_df)
+                else:
+                    st.error(f"No runs with {st.session_state.time_type.name} values found, Lifetime Stats visualization not possible")
+
+                            
             st.subheader("Run Stats", divider="blue")
             with st.container(border=True):
-                n = 2
-                complete_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=False)
-                partial_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True)
-
-                segment_order = complete_runs.index.to_list()
-                default_ids = complete_runs.sum(axis=0).sort_values().head(n).index.to_list()
-                run_ids = st.multiselect(f"Select run (includes top {n} runs by default)", options= partial_runs.columns.to_list(), key=f"multirun_selector_{st.session_state["time_type"]}", default=default_ids)
-            
-                run_table, run_graph = st.columns(2, gap="large")
-                with run_table.container():
-                    if f"pills_{st.session_state["time_type"]}" not in st.session_state:
-                        st.session_state[f"pills_{st.session_state["time_type"]}"] = []
-
-                    format_options = st.session_state[f"pills_{st.session_state["time_type"]}"] 
-                    cumulative = "Cumulative" in format_options
-                    lss_ns = "Nanoseconds" in format_options
-
-                    table_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True, cumulative=cumulative, lss_ns=lss_ns, lss_repr=True)
-                    selected_table_runs = table_runs.loc[:, run_ids]
-                    st.dataframe(selected_table_runs, height=len(segment_order) * 30, key=f"table_{st.session_state["time_type"]}")
-                    format_options = st.pills("Format options", options = ["Cumulative", "Nanoseconds"], key=f"pills_{st.session_state["time_type"]}", selection_mode = "multi", default=[])
+                if not partial_runs.empty:
+                    n = min(3, len(complete_runs.columns))
+                    segment_order = complete_runs.index.to_list()
+                    default_ids = complete_runs.sum(axis=0).sort_values().head(n).index.to_list()
+                    run_ids = st.multiselect(f"Select run (includes top {n} runs by default)", options= partial_runs.columns.to_list(), key=f"multirun_selector_{st.session_state.time_type.name}", default=default_ids)
                     
-                with run_graph:
-                    line_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True, cumulative=True)
-                    selected_line_runs = line_runs.loc[:, run_ids]
-                    selected_line_runs = pd.melt(selected_line_runs.T.rename_axis("id").reset_index(), id_vars='id', value_name="TimeDelta", var_name="Segment")
-                    selected_line_runs["Time"] = selected_line_runs["TimeDelta"].apply(lambda x: encode_time(x, include_ns=lss_ns) if pd.notna(x) else None) 
-                    selected_line_runs["DateTime"] = pd.to_datetime(selected_line_runs["TimeDelta"], unit="ns")
+                    run_table, run_graph = st.columns(2, gap="large")
+                    with run_table.container():
+                        if f"pills_{st.session_state.time_type.name}" not in st.session_state:
+                            st.session_state[f"pills_{st.session_state.time_type.name}"] = []
+                            
+                        format_options = st.session_state[f"pills_{st.session_state.time_type.name}"]
+                        cumulative = "Cumulative" in format_options
+                        nanoseconds = "Nanoseconds" in format_options
+                        formatted_runs = splits_dataframe(lss_bytes, time_type=st.session_state.time_type, allow_partial=True, cumulative=cumulative, lss_ns=nanoseconds, lss_repr=True)
+                        
+                        selected_runs = formatted_runs.loc[:, run_ids]
+                        st.dataframe(selected_runs, height=len(segment_order) * 30, key=f"table_{st.session_state.time_type.name}")
+                        format_options = st.pills("Format options", options = ["Cumulative", "Nanoseconds"], key=f"pills_{st.session_state.time_type.name}", selection_mode = "multi", default=[])
 
-                    line_graph = alt.Chart(selected_line_runs, title=alt.Title("Run Breakdown (Cumulative)", anchor="middle")).mark_line(
-                        point=True,
-                        interpolate="monotone",
-                        orient="horizontal").encode(
-                            alt.Y("Segment:N", axis=alt.Axis(grid=True)).title("Segment Name").sort(segment_order),
-                            alt.X("DateTime:T", axis=alt.Axis(grid=False, format="%H:%M:%S")).title("Run Duration"),
-                            alt.Order(field="DateTime"),
-                            color='id:N',
-                            tooltip=["Time", "Segment", "id"]
-                        ).properties(
-                            height=len(segment_order) * 30
-                        )
-                    st.altair_chart(line_graph)
+                    with run_graph:                       
+                        selected_lines = cumulative_runs.loc[:, run_ids]
+                        selected_lines = pd.melt(selected_lines.T.rename_axis("id").reset_index(), id_vars='id', value_name="TimeDelta", var_name="Segment")
+                        selected_lines["Time"] = selected_lines["TimeDelta"].apply(lambda x: encode_time(x, include_ns=False) if pd.notna(x) else None) 
+                        selected_lines["DateTime"] = pd.to_datetime(selected_lines["TimeDelta"], unit="ns")
 
-                st.divider()
+                        line_graph = alt.Chart(selected_lines, title=alt.Title("Run Breakdown (Cumulative)", anchor="middle")).mark_line(
+                            point=True,
+                            interpolate="monotone",
+                            orient="horizontal").encode(
+                                alt.Y("Segment:N", axis=alt.Axis(grid=True)).title("Segment Name").sort(segment_order),
+                                alt.X("DateTime:T", axis=alt.Axis(grid=False, format="%H:%M:%S")).title("Run Duration"),
+                                alt.Order(field="DateTime"),
+                                color='id:N',
+                                tooltip=["Time", "Segment", "id"]
+                            ).properties(
+                                height=len(segment_order) * 30
+                            )
+                        st.altair_chart(line_graph)
+  
+                    st.divider()
+                    
+                    selected_bars = partial_runs.loc[:, run_ids]
+                    selected_bars = pd.melt(selected_bars.T.rename_axis("id").reset_index(), id_vars='id', value_name="TimeDelta", var_name="Segment")
+                    selected_bars["Time"] = selected_bars["TimeDelta"].apply(lambda x: encode_time(x, include_ns=nanoseconds) if pd.notna(x) else None) 
+                    selected_bars["DateTime"] = pd.to_datetime(selected_bars["TimeDelta"], unit="ns")
+                    selected_bars["Zero"] = pd.to_datetime(0, unit="ns")
 
-                bar_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True, cumulative=False)
-                selected_bar_runs = bar_runs.loc[:, run_ids]
-                selected_bar_runs = pd.melt(selected_bar_runs.T.rename_axis("id").reset_index(), id_vars='id', value_name="TimeDelta", var_name="Segment")
-                selected_bar_runs["Time"] = selected_bar_runs["TimeDelta"].apply(lambda x: encode_time(x, include_ns=lss_ns) if pd.notna(x) else None) 
-                selected_bar_runs["DateTime"] = pd.to_datetime(selected_bar_runs["TimeDelta"], unit="ns")
-                selected_bar_runs["Zero"] = pd.to_datetime(0, unit="ns")
+                    bar_graph = alt.Chart(selected_bars, title = alt.Title("Run Breakdown (Segmented)", anchor="middle")).mark_bar().encode(
+                        alt.Y("DateTime:T", axis=alt.Axis(grid=True, format="%H:%M:%S")).title("Segment Duration"),
+                        alt.X("Segment:N", axis=alt.Axis(labelAngle=-90)).title("Segment Name").sort(segment_order),
+                        y2="Zero:T",
+                        xOffset="id:N",
+                        color="id:N"
+                    )
+                    st.altair_chart(bar_graph)
 
-                bar_graph = alt.Chart(selected_bar_runs, title = alt.Title("Run Breakdown (Segmented)", anchor="middle")).mark_bar().encode(
-                    alt.Y("DateTime:T", axis=alt.Axis(grid=True, format="%H:%M:%S")).title("Segment Duration"),
-                    alt.X("Segment:N", axis=alt.Axis(labelAngle=-90)).title("Segment Name").sort(segment_order),
-                    y2="Zero:T",
-                    xOffset="id:N",
-                    color="id:N"
-                )
-                st.altair_chart(bar_graph)
+                else:
+                    st.error(f"No splits with {st.session_state.time_type.name} values found, Run Stats visualization not possible")
+                    
 
             st.subheader("Segment Stats", divider="blue")
             
-            segment_runs = splits_dataframe(lss_bytes, time_type=st.session_state["time_type"], allow_partial=True)
-            segment_name = st.selectbox("Select segment (defaults to first)", list(segment_runs.index), 0, key=f"segment_selector_{st.session_state["time_type"]}")
-            segment_times = segment_runs.loc[segment_name, :]
-            segment_times = segment_times.loc[~segment_times.isna()]
-            
-            with st.container(border=False):
-                with st.container(border=True):
-                    segment_stats = represent_time(segment_times, include_ns=False)
-                    time_linegraph(dataframe=segment_stats, title=f"Segment Duration over Time ({segment_name})", x_title = "Attempt Number", y_title="Segment Duration")
-
-                with st.container(border=True):
-                    min_segment, max_segment, mean_segment, median_segment, std_segment = st.columns(5)
-                    min_segment.metric(f"MIN ({segment_times.index[segment_times.argmin()]})", encode_time(segment_times.min(), include_ns=False))
-                    max_segment.metric(f"MAX ({segment_times.index[segment_times.argmax()]})", encode_time(segment_times.max(), include_ns=False))
-                    mean_segment.metric("MEAN", encode_time(segment_times.mean(), include_ns=False))
-                    median_segment.metric("MEDIAN", encode_time(segment_times.median(), include_ns=False))
-                    std_segment.metric("STANDARD DEVIATION", f"{int(segment_times.std().total_seconds())} seconds")
-                                        
-         
-            
-            
-
+            segment_name = st.selectbox("Select segment (defaults to first)", list(partial_runs.index), 0, key=f"segment_selector_{st.session_state.time_type.name}")
+            segment_times = partial_runs.loc[segment_name, :]
+            segment_times = segment_times.loc[~segment_times.isna()] 
         
+            with st.container(border=False):
+                if not segment_times.empty:
+                    with st.container(border=True):
+                        segment_stats = represent_time(segment_times, include_ns=False)
+                        time_linegraph(dataframe=segment_stats, title=f"Segment Duration over Time ({segment_name})", x_title = "Attempt Number", y_title="Segment Duration")
+
+                    with st.container(border=True):
+                        min_segment, max_segment, mean_segment, median_segment, std_segment = st.columns(5)
+                        min_segment.metric(f"MIN (run {segment_times.index[segment_times.argmin()]})", encode_time(segment_times.min(), include_ns=False))
+                        max_segment.metric(f"MAX (run {segment_times.index[segment_times.argmax()]})", encode_time(segment_times.max(), include_ns=False))
+                        mean_segment.metric("MEAN", encode_time(segment_times.mean(), include_ns=False))
+                        median_segment.metric("MEDIAN", encode_time(segment_times.median(), include_ns=False))
+                        std_segment.metric("STANDARD DEVIATION", f"{int(segment_times.std().total_seconds())} seconds")
+                else:
+                    st.error(f"No splits with {st.session_state.time_type.name} values for segment {segment_name} found, Segment Stats visualization not possible")
