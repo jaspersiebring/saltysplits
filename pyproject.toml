@@ -1,6 +1,6 @@
 [project]
 name = "saltysplits"
-version = "1.0.2"
+version = "1.0.3"
 description = "Toolset for modeling of LiveSplit files and analysis of the speedrunning data within"
 readme = "README.md"
 keywords = ["livesplit", "speedrunning", "pydantic", "xml", "gaming"]
