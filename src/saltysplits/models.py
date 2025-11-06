@@ -3,11 +3,11 @@ from pandas import Timedelta
 from pydantic import conint
 from pydantic_xml import BaseXmlModel, attr, element, wrapped
 from typing import List, Optional
-from saltysplits.annotations import TimeOptional, DateTime, SBool, OffsetOptional
+from saltysplits.annotations import TimeOptional, DateTime, SBool, OffsetOptional, LssVersion
 
 
 class Splits(BaseXmlModel, tag="Run", arbitrary_types_allowed=True, search_mode="ordered"):
-    version: Optional[str] = attr(name="version", default=None)
+    version: LssVersion = attr(name="version")
     game_icon: Optional[str] = element(tag="GameIcon", default=None)
     game_name: str = element(tag="GameName")
     category_name: str = element(tag="CategoryName")

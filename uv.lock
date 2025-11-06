@@ -1,6 +1,10 @@
 version = 1
 revision = 1
 requires-python = ">=3.12"
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version < '3.14'",
+]
 
 [[package]]
 name = "altair"
@@ -1409,6 +1413,24 @@ wheels = [
 ]
 
 [[package]]
+name = "pydantic-extra-types"
+version = "2.10.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3a/10/fb64987804cde41bcc39d9cd757cd5f2bb5d97b389d81aa70238b14b8a7e/pydantic_extra_types-2.10.6.tar.gz", hash = "sha256:c63d70bf684366e6bbe1f4ee3957952ebe6973d41e7802aea0b770d06b116aeb", size = 141858 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/04/5c918669096da8d1c9ec7bb716bd72e755526103a61bc5e76a3e4fb23b53/pydantic_extra_types-2.10.6-py3-none-any.whl", hash = "sha256:6106c448316d30abf721b5b9fecc65e983ef2614399a24142d689c7546cc246a", size = 40949 },
+]
+
+[package.optional-dependencies]
+semver = [
+    { name = "semver" },
+]
+
+[[package]]
 name = "pydantic-xml"
 version = "2.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1724,6 +1746,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pandas" },
     { name = "pillow" },
+    { name = "pydantic-extra-types", extra = ["semver"] },
     { name = "pydantic-xml", extra = ["lxml"] },
 ]
 
@@ -1750,6 +1773,7 @@ notebook = [
 requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pillow", specifier = ">=11.2.1" },
+    { name = "pydantic-extra-types", extras = ["semver"], specifier = ">=2.10.6" },
     { name = "pydantic-xml", extras = ["lxml"], specifier = ">=2.15.0" },
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = ">=1.44.1" },
 ]
@@ -1767,6 +1791,15 @@ notebook = [
     { name = "nbconvert", specifier = ">=7.16.6" },
     { name = "notebook", specifier = ">=7.4.7" },
     { name = "pip", specifier = ">=25.2" },
+]
+
+[[package]]
+name = "semver"
+version = "3.0.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/d1/d3159231aec234a59dd7d601e9dd9fe96f3afff15efd33c1070019b26132/semver-3.0.4.tar.gz", hash = "sha256:afc7d8c584a5ed0a11033af086e8af226a9c0b206f313e0301f8dd7b6b589602", size = 269730 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a6/24/4d91e05817e92e3a61c8a21e08fd0f390f5301f1c448b137c57c4bc6e543/semver-3.0.4-py3-none-any.whl", hash = "sha256:9c824d87ba7f7ab4a1890799cec8596f15c1241cb473404ea1cb0c55e4b04746", size = 17912 },
 ]
 
 [[package]]

@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2.3",
     "pillow>=11.2.1",
+    "pydantic-extra-types[semver]>=2.10.6",
     "pydantic-xml[lxml]>=2.15.0",
 ]
 
