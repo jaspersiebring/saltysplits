@@ -29,6 +29,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
+notebook = [
+    "jupyter>=1.1.1",
+    "nbconvert>=7.16.6",
+    "notebook>=7.4.7",
+    "pip>=25.2",
+]
 dev = [
     "mypy>=1.15.0",
     "pytest>=8.3.5",
