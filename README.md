@@ -2,9 +2,9 @@
 
 [![PyPI](https://img.shields.io/pypi/v/saltysplits)](https://pypi.org/project/saltysplits/)
 ![python-version-from-pep-621-toml](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fjaspersiebring%2Fsaltysplits%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](http://saltysplits.com/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.saltysplits.com)
 
-SaltySplits is a powerful Python library for the modeling of LiveSplit files and analysis of the speedrunning data within. It also features an experimental front-end (available at [saltysplits.com](https://saltysplits.com/)). 
+SaltySplits is a powerful Python library for the modeling of LiveSplit files and analysis of the speedrunning data within. It also features an experimental front-end (available at [streamlit.saltysplits.com](https://streamlit.saltysplits.com)). 
 
 ## Key features
 - Modeling, not parsing: LSS's XML structure is explicitely modeled through [`pydantic-xml`](https://github.com/dapper91/pydantic-xml), allowing us to validate all elements and attributes within
@@ -319,7 +319,7 @@ print(dataframe.iloc[:, :3].head(3))
 
 ### Streamlit front-end
 
-Available at [SaltySplits.com](http://saltysplits.com/) through `streamlit`'s Community Cloud service. 
+Available at [streamlit.saltysplits.com](https://streamlit.saltysplits.com) through `streamlit`'s Community Cloud service. 
 
 Can also be hosted locally:
 
@@ -340,7 +340,7 @@ Simply right-click your LiveSplit window and select `Save Splits As...`:
 
 <img src="https://raw.githubusercontent.com/jaspersiebring/saltysplits/refs/heads/main/docs/assets/images/export.png" alt="export" width="300">
 
-You can then load it with either the `saltysplits` module or the `streamlit` front-end (self-hosted or through [SaltySplits.com](http://saltysplits.com/))
+You can then load it with either the `saltysplits` module or the `streamlit` front-end (self-hosted or through [streamlit.saltysplits.com](https://streamlit.saltysplits.com))
 
 </details>
 
