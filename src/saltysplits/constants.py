@@ -1,5 +1,8 @@
+from packaging.version import Version
+
 DATETIME_FORMAT = r"%m/%d/%Y %H:%M:%S"
 NANOSECONDS_DAY = 86400 * 10**9
 NANOSECONDS_HOUR = 3600 * 10**9
 NANOSECONDS_MINUTE = 60 * 10**9
 NANOSECONDS_SECOND = 10**9
+MINIMUM_LSS_VERSION = Version("1.6.0")

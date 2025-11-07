@@ -1,6 +1,6 @@
 [project]
 name = "saltysplits"
-version = "1.0.3"
+version = "1.1.0"
 description = "Toolset for modeling of LiveSplit files and analysis of the speedrunning data within"
 readme = "README.md"
 keywords = ["livesplit", "speedrunning", "pydantic", "xml", "gaming"]
@@ -9,6 +9,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "packaging>=24.2",
     "pandas>=2.2.3",
     "pillow>=11.2.1",
     "pydantic-xml[lxml]>=2.15.0",
@@ -29,6 +30,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
+notebook = [
+    "jupyter>=1.1.1",
+    "nbconvert>=7.16.6",
+    "notebook>=7.4.7",
+    "pip>=25.2",
+]
 dev = [
     "mypy>=1.15.0",
     "pytest>=8.3.5",
