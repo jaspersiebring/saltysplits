@@ -6,6 +6,7 @@ import streamlit as st
 import saltysplits as ss
 import altair as alt
 from typing import List
+from pydantic import ValidationError
 from saltysplits.annotations import encode_time
 from saltysplits import SaltySplits
 from saltysplits import DEMO_SPLITS
@@ -190,21 +191,26 @@ if __name__ == "__main__":
             """,
             unsafe_allow_html=True,
         )
-
+        
         lss_file = st.file_uploader(
-            "Upload LSS file",
+            "Upload LSS file (minimum supported version is 1.6.0)",
             type=["lss", "xml"],
             accept_multiple_files=False,
-            label_visibility="hidden"
+            label_visibility="visible"
         )
         
         if lss_file is not None:
             lss_bytes = lss_file.getvalue()
-            if splits_dataframe(lss_bytes, time_type=TimeType.REAL_TIME, allow_partial=False).empty:
-                st.error(f"No runs with {TimeType.REAL_TIME.name} values found, defaulting to example LSS file")
-                lss_bytes = read_bytes(DEMO_SPLITS)    
-            else:
-                st.toast("Did you know that you can export your Run Stats? Hover the table and click 'Download as CSV'")
+            try:
+                if splits_dataframe(lss_bytes, time_type=TimeType.REAL_TIME, allow_partial=False).empty:
+                    st.error(f"No runs with {TimeType.REAL_TIME.name} values found, defaulting to example LSS file")
+                    lss_bytes = read_bytes(DEMO_SPLITS)    
+                else:
+                    st.toast("Did you know that you can export your Run Stats? Hover the table and click 'Download as CSV'")
+                    
+            except ValidationError as e:
+                st.warning(f"{e}")
+                st.toast(f"{e}")
         else:
             lss_bytes = read_bytes(DEMO_SPLITS)
         splits = splits_from_bytes(lss_bytes)
