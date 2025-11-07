@@ -8,6 +8,7 @@ import altair as alt
 from typing import List
 from pydantic import ValidationError
 from saltysplits.annotations import encode_time
+from saltysplits.constants import MINIMUM_LSS_VERSION
 from saltysplits import SaltySplits
 from saltysplits import DEMO_SPLITS
 from saltysplits import TimeType
@@ -193,7 +194,7 @@ if __name__ == "__main__":
         )
         
         lss_file = st.file_uploader(
-            "Upload LSS file (minimum supported version is 1.6.0)",
+            f"Upload LSS file (minimum supported version is {MINIMUM_LSS_VERSION})",
             type=["lss", "xml"],
             accept_multiple_files=False,
             label_visibility="visible"
