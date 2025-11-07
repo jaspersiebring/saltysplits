@@ -15,7 +15,7 @@ from saltysplits import TimeType
 
 
 st.set_page_config(
-    page_title="Sup! - SaltySplits.com",
+    page_title="Sup! - streamlit.saltysplits.com",
     page_icon="🧂",
     initial_sidebar_state="expanded",
     layout="wide",
