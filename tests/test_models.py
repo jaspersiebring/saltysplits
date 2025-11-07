@@ -5,8 +5,8 @@ from .conftest import drop_empty_tags
 
 
 class TestSplits:
-    def test_instancing(self, livesplit_vicecity):
-        tree = ET.parse(livesplit_vicecity)
+    def test_instancing(self, LIVESPLIT_1_7_0):
+        tree = ET.parse(LIVESPLIT_1_7_0)
         element = tree.getroot()
 
         # we currently don't model MetaData and AutosplitterSettings so we drop them before comparison
@@ -15,9 +15,7 @@ class TestSplits:
 
         # dropping empty tags before comparison, no way to catch that AND actually optional elements (e.g. real_time and/or game_time)
         _ = drop_empty_tags(element=element, top_level=False)
-        element_string = ET.tostring(element, method="c14n2", strip_text=True).decode(
-            "utf-8"
-        )
+        element_string = ET.tostring(element, method="c14n2", strip_text=True).decode("utf-8")
 
         # validating if we can instance from known valid XML element
         model = Splits.from_xml_tree(element)
@@ -33,8 +31,8 @@ class TestSplits:
 
 
 class TestAttempt:
-    def test_dump(self, livesplit_vicecity):
-        tree = ET.parse(livesplit_vicecity)
+    def test_dump(self, LIVESPLIT_1_7_0):
+        tree = ET.parse(LIVESPLIT_1_7_0)
         root = tree.getroot()
         element = next(root.iter("Attempt"))
         # dropping empty tags before comparison, no way to catch that AND actually optional elements (e.g. real_time and/or game_time)
@@ -46,17 +44,15 @@ class TestAttempt:
         recreated_element = model.to_xml_tree(
             exclude_unset=True
         )  # only include elements actually set by the XML
-        recreated_element_string = ET.tostring(
-            recreated_element, method="c14n2", strip_text=True
-        )
+        recreated_element_string = ET.tostring(recreated_element, method="c14n2", strip_text=True)
 
         # validating that encoded model is identical to original XML element
         assert element_string == recreated_element_string
 
 
 class TestSegment:
-    def test_dump(self, livesplit_vicecity):
-        tree = ET.parse(livesplit_vicecity)
+    def test_dump(self, LIVESPLIT_1_7_0):
+        tree = ET.parse(LIVESPLIT_1_7_0)
         root = tree.getroot()
         element = next(root.iter("Segment"))
         # dropping empty tags before comparison, no way to catch that AND actually optional elements (e.g. real_time and/or game_time)
@@ -68,17 +64,15 @@ class TestSegment:
         recreated_element = model.to_xml_tree(
             exclude_unset=True
         )  # only include elements actually set by the XML
-        recreated_element_string = ET.tostring(
-            recreated_element, method="c14n2", strip_text=True
-        )
+        recreated_element_string = ET.tostring(recreated_element, method="c14n2", strip_text=True)
 
         # validating that encoded model is identical to original XML element
         assert element_string == recreated_element_string
 
 
 class TestSplitTime:
-    def test_dump(self, livesplit_vicecity):
-        tree = ET.parse(livesplit_vicecity)
+    def test_dump(self, LIVESPLIT_1_7_0):
+        tree = ET.parse(LIVESPLIT_1_7_0)
         root = tree.getroot()
         element = next(root.iter("SplitTime"))
         # dropping empty tags before comparison, no way to catch that AND actually optional elements (e.g. real_time and/or game_time)
@@ -90,17 +84,15 @@ class TestSplitTime:
         recreated_element = model.to_xml_tree(
             exclude_unset=True
         )  # only include elements actually set by the XML
-        recreated_element_string = ET.tostring(
-            recreated_element, method="c14n2", strip_text=True
-        )
+        recreated_element_string = ET.tostring(recreated_element, method="c14n2", strip_text=True)
 
         # validating that encoded model is identical to original XML element
         assert element_string == recreated_element_string
 
 
 class TestTime:
-    def test_dump(self, livesplit_vicecity):
-        tree = ET.parse(livesplit_vicecity)
+    def test_dump(self, LIVESPLIT_1_7_0):
+        tree = ET.parse(LIVESPLIT_1_7_0)
         root = tree.getroot()
         element = next(root.iter("Time"))
         # dropping empty tags before comparison, no way to catch that AND actually optional elements (e.g. real_time and/or game_time)
@@ -112,9 +104,7 @@ class TestTime:
         recreated_element = model.to_xml_tree(
             exclude_unset=True
         )  # only include elements actually set by the XML
-        recreated_element_string = ET.tostring(
-            recreated_element, method="c14n2", strip_text=True
-        )
+        recreated_element_string = ET.tostring(recreated_element, method="c14n2", strip_text=True)
 
         # validating that encoded model is identical to original XML element
         assert element_string == recreated_element_string

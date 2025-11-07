@@ -2,7 +2,7 @@ import re
 from pandas import Timedelta
 from datetime import datetime
 from pydantic import BeforeValidator, PlainSerializer, AfterValidator
-from pydantic_extra_types.semantic_version import SemanticVersion
+from packaging.version import Version
 from typing import Optional, Annotated, List
 from saltysplits.constants import (
     DATETIME_FORMAT,
@@ -113,12 +113,12 @@ def encode_datetime(content: datetime) -> str:
     return content.strftime(DATETIME_FORMAT)
 
 
-def verify_version(version: SemanticVersion) -> SemanticVersion:
-    if version < MINIMUM_LSS_VERSION:
+def verify_version(lss_version: Version) -> Version:
+    if lss_version < MINIMUM_LSS_VERSION:
         raise ValueError(
-            f"Minimum LSS file version is {MINIMUM_LSS_VERSION}. Consider exporting your {version} LSS file with LiveSplit to reencode it to a more recent version"
+            f"Minimum LSS file version is {MINIMUM_LSS_VERSION}. Consider exporting your {lss_version} LSS file with LiveSplit to reencode it to a more recent version"
         )
-    return version
+    return lss_version
 
 
 TimeOptional = Annotated[
@@ -146,8 +146,8 @@ SBool = Annotated[
 ]
 
 LssVersion = Annotated[
-    SemanticVersion,
-    BeforeValidator(SemanticVersion.parse),
+    Version,
+    BeforeValidator(Version),
     AfterValidator(verify_version),
-    PlainSerializer(str),
+    PlainSerializer(lambda x: str(x), when_used="always"),
 ]

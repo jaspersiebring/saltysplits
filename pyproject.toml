@@ -1,6 +1,6 @@
 [project]
 name = "saltysplits"
-version = "1.0.3"
+version = "1.1.0"
 description = "Toolset for modeling of LiveSplit files and analysis of the speedrunning data within"
 readme = "README.md"
 keywords = ["livesplit", "speedrunning", "pydantic", "xml", "gaming"]
@@ -9,9 +9,9 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "packaging>=24.2",
     "pandas>=2.2.3",
     "pillow>=11.2.1",
-    "pydantic-extra-types[semver]>=2.10.6",
     "pydantic-xml[lxml]>=2.15.0",
 ]
 
