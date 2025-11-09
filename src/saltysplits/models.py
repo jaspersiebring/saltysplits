@@ -14,7 +14,7 @@ class Splits(BaseXmlModel, tag="Run", arbitrary_types_allowed=True, search_mode=
     layout_path: Optional[str] = element(tag="LayoutPath", default=None)
     offset: OffsetOptional = element(tag="Offset", default=Timedelta(0))
     attempt_count: Optional[conint(ge=0)] = element(tag="AttemptCount", default=0)
-    attempt_history: Optional[List[Attempt]] = wrapped("AttemptHistory", default=None)
+    attempt_history: Optional[List[Attempt]] = wrapped("AttemptHistory", default=[])
     segments: List[Segment] = wrapped("Segments")
 
 
@@ -36,7 +36,7 @@ class Segment(BaseXmlModel, tag="Segment", arbitrary_types_allowed=True, search_
     icon: Optional[str] = element(tag="Icon", default=None)
     split_times: List[SplitTime] = wrapped("SplitTimes")
     best_segment_time: BaseTime = element(tag="BestSegmentTime")
-    segment_history: Optional[List[Time]] = wrapped("SegmentHistory", default=None)
+    segment_history: Optional[List[Time]] = wrapped("SegmentHistory", default=[])
 
 
 class SplitTime(BaseTime, tag="SplitTime"):

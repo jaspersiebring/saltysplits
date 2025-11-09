@@ -45,7 +45,7 @@ class SaltySplits(Splits):
 
         run_ids = set()
         run_ids.update([attempt.id for attempt in self.attempt_history])
-        run_ids.update([split.id for segment in self.segments for split in segment.segment_history])  # fmt: skip
+        run_ids.update([split.id for segment in self.segments if segment.segment_history for split in segment.segment_history])  # fmt: skip
         run_ids = list(run_ids)
 
         # sort them as int if possible
